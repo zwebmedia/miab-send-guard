@@ -170,7 +170,8 @@ Per account:
 | `action` | **Policy, not state.** What *will* happen if the account breaches a limit: `pause` or `rotate`. It is configuration and does not change when something happens. |
 | `locked` / `locked_at` | `true` only if the password was **rotated** today, and when. |
 | `paused` | `true` only while sending is **actually blocked**. |
-| `paused_until` / `paused_resumes_in` | End time (UTC) and countdown of an active pause; `null` when not paused. |
+| `paused_until` | When an active pause ends, as a UTC timestamp. Use this for storage, charts and comparisons: it stays correct however old the snapshot is. `null` when not paused. |
+| `paused_resumes_in` | The same moment as a relative countdown (`hours`, `minutes`, `label`) for people reading the status live. Only accurate as of `generated_at`, so do not store it. `null` when not paused. |
 
 Top level of the file:
 
