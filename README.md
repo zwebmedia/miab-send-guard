@@ -217,4 +217,4 @@ sudo rm -f /etc/postfix/sasl_paused /etc/postfix/sasl_paused.db
 
 ## License
 
-MIT, see `LICENSE`.
+MIT License. Love it, hate it, or fork it! See `LICENSE`.
