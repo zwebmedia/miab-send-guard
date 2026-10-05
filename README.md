@@ -116,7 +116,7 @@ Mail-in-a-Box rewrites its managed Postfix settings whenever it is upgraded, and
 So the daemon checks once a minute that the rule is present:
 
 - It logs `PAUSE-RULE present` / `PAUSE-RULE MISSING` whenever the state changes.
-- It publishes `"pause_rule_active": true|false` in the status JSON, so your external monitoring can alert on `false`.
+- It publishes `"pause_rule_active": true|false` at the top level of the status JSON (field reference below), so your external monitoring can alert on `false`.
 - **While the rule is missing, a breach by a `pause` account falls back to `rotate`.** The log line says why. Protection beats convenience: the account is locked out, and you do the big password reset that `pause` was meant to avoid, but only when a breach happens at the same time as a lost rule.
 
 After every Mail-in-a-Box upgrade, check, and restore if needed by repeating install step 4:
@@ -154,6 +154,34 @@ Mail-in-a-Box serves everything under `/home/user-data/www/default/` over HTTPS,
 ```
 
 Only accounts with activity today (or currently paused) are listed. Times are UTC; "resets in" is computed against the server's local midnight and hour boundary.
+
+### What the fields mean
+
+Per account:
+
+| Field | Meaning |
+|---|---|
+| `account_id` | Stable salted-hash id. Use it as the key for history; it reveals no address. |
+| `email_masked` | The address as obfuscated by your `mask` setting. |
+| `hour_count` / `day_count` | Messages sent in the current calendar hour / day (server local time). |
+| `peak_hour_count` | The busiest single hour so far today. |
+| `burst_count` | Messages in the last `burst_seconds` seconds. |
+| `hour_limit` / `day_limit` / `burst_limit` / `burst_seconds` | This account's limits. |
+| `action` | **Policy, not state.** What *will* happen if the account breaches a limit: `pause` or `rotate`. It is configuration and does not change when something happens. |
+| `locked` / `locked_at` | `true` only if the password was **rotated** today, and when. |
+| `paused` | `true` only while sending is **actually blocked**. |
+| `paused_until` / `paused_resumes_in` | End time (UTC) and countdown of an active pause; `null` when not paused. |
+
+Top level of the file:
+
+| Field | Meaning |
+|---|---|
+| `generated_at` | When the snapshot was written (UTC). Alert if it goes stale: the watcher is not running. |
+| `pause_rule_active` | `true` if Postfix currently has the `check_sasl_access` rule that enforces pauses (the watcher re-checks once a minute). `false` means the rule is **missing**, usually after a Mail-in-a-Box upgrade, so pauses are **not enforced** and `pause` accounts fall back to password rotation on a breach. Restore it by repeating install step 4, then it returns to `true` within a minute. See "Mail-in-a-Box upgrades: the fallback". |
+| `hourly_limit` / `daily_limit` | The default limits (accounts with overrides carry their own, see per-account fields). |
+| `hour_resets_in` / `day_resets_in` | Time until the next calendar hour / day starts, when those counters restart. |
+
+**Alert on state, not policy:** raise an alarm when `paused` or `locked` is `true`, or when `pause_rule_active` is `false`. An account showing `"action": "pause"` with `"paused": false` is healthy: it is sending normally and is merely configured to be paused rather than locked if it ever breaches.
 
 ### Logging it somewhere else
 
