@@ -1,0 +1,25 @@
+{
+  "default_limits": {
+    "hour": 10,
+    "day": 50,
+    "burst": 10,
+    "burst_seconds": 300,
+    "action": "rotate",
+    "pause_hours": 8
+  },
+  "overrides": {
+    "alerts@example.com": {
+      "hour": 20,
+      "day": 100,
+      "burst": 10,
+      "burst_seconds": 300,
+      "action": "pause",
+      "pause_hours": 8
+    }
+  },
+  "mask": {
+    "mode": "partial",
+    "keep": 2,
+    "keep_domain": true
+  }
+}

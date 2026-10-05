@@ -1,0 +1,8 @@
+# runtime state and secrets: never commit
+config.json
+state.json
+paused.json
+salt.txt
+*.log
+*.tmp
+__pycache__/

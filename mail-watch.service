@@ -1,0 +1,18 @@
+[Unit]
+Description=miab-send-guard: per-account send limits for Mail-in-a-Box
+After=postfix.service
+Wants=postfix.service
+
+[Service]
+# Adjust the path to where you installed the repository.
+ExecStart=/usr/bin/python3 /opt/miab-send-guard/watch.py
+Restart=always
+RestartSec=5
+# Needs root: reads /var/log/mail.log, writes /etc/postfix/sasl_paused,
+# runs postmap and Mail-in-a-Box's management CLI.
+User=root
+StandardOutput=append:/opt/miab-send-guard/watch.log
+StandardError=append:/opt/miab-send-guard/watch.log
+
+[Install]
+WantedBy=multi-user.target
